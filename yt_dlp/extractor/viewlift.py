@@ -12,7 +12,7 @@ from ..utils import (
 
 class ViewLiftBaseIE(InfoExtractor):
     _API_BASE = 'https://prod-api.viewlift.com/'
-    _DOMAINS_REGEX = r'(?:(?:main\.)?snagfilms|snagxtreme|funnyforfree|kiddovid|winnersview|(?:monumental|lax)sportsnetwork|vayafilm|failarmy|ftfnext|lnppass\.legapallacanestro|moviespree|app\.myoutdoortv|neoufitness|pflmma|theidentitytb)\.com|(?:hoichoi|app\.horseandcountry|kronon|marquee|supercrosslive)\.tv'
+    _DOMAINS_REGEX = r'(?:(?:main|watch\.)?nextupcomedy|snagfilms|snagxtreme|funnyforfree|kiddovid|winnersview|(?:monumental|lax)sportsnetwork|vayafilm|failarmy|ftfnext|lnppass\.legapallacanestro|moviespree|app\.myoutdoortv|neoufitness|pflmma|theidentitytb)\.com|(?:hoichoi|app\.horseandcountry|kronon|marquee|supercrosslive)\.tv'
     _SITE_MAP = {
         'ftfnext': 'lax',
         'funnyforfree': 'snagfilms',
@@ -27,6 +27,7 @@ class ViewLiftBaseIE(InfoExtractor):
         'snagxtreme': 'snagfilms',
         'theidentitytb': 'tampabay',
         'vayafilm': 'snagfilms',
+        'nextupcomedy':'next-up'
     }
     _TOKENS = {}
 
@@ -42,6 +43,8 @@ class ViewLiftBaseIE(InfoExtractor):
 
     def _call_api(self, site, path, video_id, url, query):
         self._fetch_token(site, url)
+
+
         try:
             return self._download_json(
                 self._API_BASE + path, video_id, headers={'Authorization': self._TOKENS.get(site)}, query=query)
@@ -99,6 +102,7 @@ class ViewLiftEmbedIE(ViewLiftBaseIE):
             site, 'entitlement/video/status', film_id, url, {
                 'id': film_id
             })['video']
+        print("DATA:", content_data)
         gist = content_data['gist']
         title = gist['title']
         video_assets = content_data['streamingInfo']['videoAssets']
@@ -134,6 +138,14 @@ class ViewLiftEmbedIE(ViewLiftBaseIE):
                 'url': sub_url,
             })
 
+        print("\n\n\n\nmeta data:")
+        print('title:', title)
+        print("description", gist.get('description'))
+        print("thumbnail", gist.get('videoImageUrl'))
+        # print("tags", traverse_obj(content_data, ('tags', ..., 'title')))
+        print("artist:", gist.get('artist'))
+
+        print("\n\n\n\n")
         return {
             'id': film_id,
             'title': title,
@@ -146,6 +158,7 @@ class ViewLiftEmbedIE(ViewLiftBaseIE):
             'subtitles': self._merge_subtitles(subs, subtitles),
             'categories': traverse_obj(content_data, ('categories', ..., 'title')),
             'tags': traverse_obj(content_data, ('tags', ..., 'title')),
+            'artist': 'Jeff Innocent'
         }
 
 
